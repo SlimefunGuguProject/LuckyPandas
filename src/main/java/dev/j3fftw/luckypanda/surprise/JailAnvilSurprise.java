@@ -28,7 +28,7 @@ public class JailAnvilSurprise implements Surprise {
                     else if (x == 0 && z == 0)
                         continue;
                     else if (x > -2 && x < 2 && z > -2 && z < 2)
-                        playerLoc.clone().add(x , y, z ).getBlock().setType(Material.IRON_BARS);
+                        playerLoc.clone().add(x, y, z).getBlock().setType(Material.IRON_BARS);
                 }
             }
         }

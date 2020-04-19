@@ -1,8 +1,11 @@
 package dev.j3fftw.luckypanda;
 
+import dev.j3fftw.luckypanda.surprise.ExplosionSurprise;
 import dev.j3fftw.luckypanda.surprise.HoleSurprise;
 import dev.j3fftw.luckypanda.surprise.JailAnvilSurprise;
 import dev.j3fftw.luckypanda.surprise.JailLavaSurprise;
+import dev.j3fftw.luckypanda.surprise.ObsidianTrapSurprise;
+import dev.j3fftw.luckypanda.surprise.RollingPandaSurprise;
 import dev.j3fftw.luckypanda.surprise.Surprise;
 import io.github.thebusybiscuit.slimefun4.api.SlimefunAddon;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -71,6 +74,9 @@ public final class LuckyPanda extends JavaPlugin implements SlimefunAddon {
         this.addSurprise(new HoleSurprise());
         this.addSurprise(new JailAnvilSurprise());
         this.addSurprise(new JailLavaSurprise());
+        this.addSurprise(new ObsidianTrapSurprise());
+        this.addSurprise(new ExplosionSurprise());
+        this.addSurprise(new RollingPandaSurprise());
     }
 
 }
