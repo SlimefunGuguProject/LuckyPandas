@@ -4,6 +4,7 @@ import dev.j3fftw.luckypanda.LuckyPanda;
 import dev.j3fftw.luckypanda.utils.ReflectionUtils;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Panda;
 import org.bukkit.entity.Player;
@@ -13,13 +14,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.UUID;
 
 public class RollingPandaSurprise implements Surprise {
 
     private final Class<?> nmsClass = ReflectionUtils.getNMSClass("EntityPanda");
     private final Class<?> cbPandaClass = ReflectionUtils.getCBClass("entity.CraftPanda");
-    private static boolean taskRunning = false;
-    private static HashSet<Panda> pandaHashSet = new HashSet<>();
+    public static boolean taskRunning = false;
+    public static final HashSet<UUID> pandaHashSet = new HashSet<>();
+    public static int id = 0;
+    private Panda panda;
 
 
     @Nonnull
@@ -32,20 +36,23 @@ public class RollingPandaSurprise implements Surprise {
     public void process(@Nonnull Player player, @Nonnull Block block) {
         final Panda newPanda = (Panda) player.getWorld().spawnEntity(block.getLocation(), EntityType.PANDA);
         newPanda.setMainGene(Panda.Gene.PLAYFUL);
-        pandaHashSet.add(newPanda);
+        pandaHashSet.add(newPanda.getUniqueId());
         if (!taskRunning) {
             taskRunning = true;
-            new BukkitRunnable() {
+            id = new BukkitRunnable() {
                 @Override
                 public void run() {
-                    Iterator<Panda> pandaIterator = pandaHashSet.iterator();
+                    final Iterator<UUID> pandaIterator = pandaHashSet.iterator();
                     while (pandaIterator.hasNext()) {
-                        Panda panda = pandaIterator.next();
-                        if (!panda.getLocation().getChunk().isLoaded())
-                            continue;
-                        else if (panda.isDead())
-                            pandaHashSet.remove(panda);
-                        else {
+                        for (Entity entity : player.getWorld().getEntities()) {
+                            if (entity instanceof Panda &&
+                                (((Panda) entity).getMainGene()) == Panda.Gene.PLAYFUL &&
+                            entity.getUniqueId().equals(pandaIterator.next())) {
+                                panda = (Panda) entity;
+                                break;
+                            }
+                        }
+                        if (panda.getLocation().getWorld().isChunkLoaded(panda.getLocation().getChunk())){
                             final Object nmsPanda = ReflectionUtils.invokeMethod(cbPandaClass,
                                 panda, "getHandle");
                             if (!(boolean) ReflectionUtils.invokeMethod(nmsClass, nmsPanda,
@@ -53,16 +60,12 @@ public class RollingPandaSurprise implements Surprise {
                                 ReflectionUtils.invokeMethod(nmsClass, nmsPanda, "v",
                                     new Class[] {boolean.class}, true);
                                 panda.setVelocity(panda.getVelocity().add
-                                    (panda.getLocation().getDirection().normalize().multiply(0.01)));
+                                    (panda.getLocation().getDirection().normalize().multiply(0.1)));
                             }
                         }
                     }
-                    if (pandaHashSet.isEmpty()) {
-                        taskRunning = false;
-                        cancel();
-                    }
                 }
-            }.runTaskTimer(LuckyPanda.getInstance(), 0, 1);
+            }.runTaskTimer(LuckyPanda.getInstance(), 0, 1).getTaskId();
         }
     }
 }
